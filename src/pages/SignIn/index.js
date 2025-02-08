@@ -9,7 +9,7 @@ import { Alert } from 'react-native';
 
 
 
-export default function SingIn() {
+export default function SignIn() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -37,17 +37,17 @@ export default function SingIn() {
       .then((userCredential) => {
         // Signed in 
         const user = userCredential.user;
-        navigation.navigate('Home')
+        navigation.navigate('MainTabs', { screen: 'MinhasEstufas' })
         // ...
       })
       .catch((error) => {
         const errorCode = error.code;
         const errorMessage = error.message;
-        
-        
-        Alert.alert('Ops, algo deu errado','Email e/ou senha inválido(s)', [{ text: 'Entendi' }]);
+
+
+        Alert.alert('Ops, algo deu errado', 'Email e/ou senha inválido(s)', [{ text: 'Entendi' }]);
       });
-    };
+  };
 
 
   useEffect(() => {
@@ -116,6 +116,17 @@ export default function SingIn() {
           </View>
 
 
+          <View style={styles.buttonForgotPasswordContainer}>
+
+            <TouchableOpacity 
+            onPress={() => navigation.navigate('ForgotPassword')}
+            >
+
+              <Text style={styles.buttonForgotPasswordText}>Esqueceu sua senha?</Text>
+
+            </TouchableOpacity>
+          </View>
+
 
           <TouchableOpacity style={styles.button}
             onPress={handleSignIn}
@@ -128,6 +139,7 @@ export default function SingIn() {
 
           <TouchableOpacity style={styles.buttonRegister}
             onPress={() => navigation.navigate('Register')}>
+              
 
 
 
@@ -204,6 +216,24 @@ const styles = StyleSheet.create({
   buttonRegisterText: {
     color: "#A1A1A1"
   },
+  ForgotPassword:{
+    flexDirection: 'row',
+
+  },
+
+
+  buttonForgotPasswordContainer: {
+  
+    flexDirection: 'row',
+    justifyContent: 'flex-end', // Alinha o botão à direita
+    alignItems: 'center',
+
+  },
+  buttonForgotPasswordText: {
+
+    color: "#A1A1A1"
+  },
+
   passwordLadoALado: {
     flexDirection: 'row',
     marginBottom: 12,
