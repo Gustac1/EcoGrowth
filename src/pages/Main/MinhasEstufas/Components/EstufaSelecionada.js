@@ -1,7 +1,8 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect} from 'react';
 import { View, Text, StyleSheet, TouchableWithoutFeedback } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { auth } from '../../../../Services/firebaseConfig';
+import { auth, db } from '../../../../Services/firebaseConfig';
+import { collection, doc, onSnapshot } from 'firebase/firestore';
 import { KeyboardAwareScrollView } from '@pietile-native-kit/keyboard-aware-scrollview';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import TemperatureChart from './Charts/Temperature/TemperatureChart';
@@ -11,17 +12,93 @@ import { ScatterChart } from 'react-native-chart-kit';
 export default function EstufaSelecionada() {
     const navigation = useNavigation();
     const route = useRoute();
-    const { nomeEstufa } = route.params;
-    const { codigoEstufa } = route.params;
-    const { userUid } = route.params;
+    const { nomeEstufa, codigoEstufa, userUid } = route.params;
+
+    // 🔹 Criamos estados para armazenar os valores dos sensores em tempo real
+    const [temperatura, setTemperatura] = useState(null);
+    const [umidade, setUmidade] = useState(null);
+    const [luminosidade, setLuminosidade] = useState(null);
+    const [temperaturaSolo, setTemperaturaSolo] = useState(null);
+    const [umidadeSolo, setUmidadeSolo] = useState(null);
+    const [pHDoSolo, setPHDoSolo] = useState(null);
+    const [ventilacao, setVentilacao] = useState(null);
+
+    useEffect(() => {
+        if (!codigoEstufa) return;
+
+        // 🔹 Caminhos ajustados para cada sensor no Firestore
+        const temperaturaRef = doc(db, 'Dispositivos', codigoEstufa, 'Dados', 'Temperatura');
+        const umidadeRef = doc(db, 'Dispositivos', codigoEstufa, 'Dados', 'Umidade');
+        const luminosidadeRef = doc(db, 'Dispositivos', codigoEstufa, 'Dados', 'Luminosidade');
+        const temperaturaSoloRef = doc(db, 'Dispositivos', codigoEstufa, 'Dados', 'TemperaturaDoSolo');
+        const umidadeSoloRef = doc(db, 'Dispositivos', codigoEstufa, 'Dados', 'UmidadeDoSolo');
+        const pHDoSoloRef = doc(db, 'Dispositivos', codigoEstufa, 'Dados', 'pHDoSolo');
+        const ventilacaoRef = doc(db, 'Dispositivos', codigoEstufa, 'Dados', 'Ventilacao');
+
+        // 🔹 Assinaturas onSnapshot para escutar as mudanças em tempo real
+        const unsubscribeTemperatura = onSnapshot(temperaturaRef, (snapshot) => {
+            if (snapshot.exists()) {
+                setTemperatura(snapshot.data().TemperaturaDoArAtual || "N/A");
+            }
+        });
+
+        const unsubscribeUmidade = onSnapshot(umidadeRef, (snapshot) => {
+            if (snapshot.exists()) {
+                setUmidade(snapshot.data().UmidadeDoArAtual || "N/A");
+            }
+        });
+
+        const unsubscribeLuminosidade = onSnapshot(luminosidadeRef, (snapshot) => {
+            if (snapshot.exists()) {
+                setLuminosidade(snapshot.data().LuminosidadeAtual || "N/A");
+            }
+        });
+
+        const unsubscribeTemperaturaSolo = onSnapshot(temperaturaSoloRef, (snapshot) => {
+            if (snapshot.exists()) {
+                setTemperaturaSolo(snapshot.data().TemperaturaDoSoloAtual || "N/A");
+            }
+        });
+
+        const unsubscribeUmidadeSolo = onSnapshot(umidadeSoloRef, (snapshot) => {
+            if (snapshot.exists()) {
+                setUmidadeSolo(snapshot.data().UmidadeDoSoloAtual || "N/A");
+            }
+        });
+
+        const unsubscribePHDoSolo = onSnapshot(pHDoSoloRef, (snapshot) => {
+            if (snapshot.exists()) {
+                setPHDoSolo(snapshot.data().pHDoSoloAtual || "N/A");
+            }
+        });
+
+        const unsubscribeVentilacao = onSnapshot(ventilacaoRef, (snapshot) => {
+            if (snapshot.exists()) {
+                setVentilacao(snapshot.data().VentilacaoAtual || "N/A");
+            }
+        });
+
+        // 🔹 Cleanup para evitar vazamento de memória
+        return () => {
+            unsubscribeTemperatura?.();
+            unsubscribeUmidade?.();
+            unsubscribeLuminosidade?.();
+            unsubscribeTemperaturaSolo?.();
+            unsubscribeUmidadeSolo?.();
+            unsubscribePHDoSolo?.();
+            unsubscribeVentilacao?.();
+        };
+
+    }, [codigoEstufa]);
+
 
 
 
     const navigateToTemperatureChart = () => {
-        console.log("Estufa Selecionada")
-        console.log(codigoEstufa); // Movido o console.log para fora da chamada navigation.navigate
-        console.log(userUid);
-        console.log("A partir daqui ja é o grafico")
+        console.log(`🌱 Estufa Selecionada: ${nomeEstufa}`);
+        console.log(`📌 Código da Estufa: ${codigoEstufa}`);
+        console.log(`👤 Usuário UID: ${userUid}`);
+        console.log(`📊 Abrindo gráfico de Temperatura...`);        
         navigation.navigate('TemperatureChartPage', {
             nomeEstufa,
             codigoEstufa,
@@ -30,10 +107,10 @@ export default function EstufaSelecionada() {
     };
 
     const navigateToHumidityChart = () => {
-        console.log("Estufa Selecionada")
-        console.log(codigoEstufa); // Movido o console.log para fora da chamada navigation.navigate
-        console.log(userUid);
-        console.log("A partir daqui ja é o grafico")
+        console.log(`🌱 Estufa Selecionada: ${nomeEstufa}`);
+        console.log(`📌 Código da Estufa: ${codigoEstufa}`);
+        console.log(`👤 Usuário UID: ${userUid}`);
+        console.log(`📊 Abrindo gráfico de Temperatura...`);        
         navigation.navigate('HumidityChartPage', {
             nomeEstufa,
             codigoEstufa,
@@ -42,10 +119,10 @@ export default function EstufaSelecionada() {
     };
 
     const navigateToLuminosityChart = () => {
-        console.log("Estufa Selecionada")
-        console.log(codigoEstufa); // Movido o console.log para fora da chamada navigation.navigate
-        console.log(userUid);
-        console.log("A partir daqui ja é o grafico")
+        console.log(`🌱 Estufa Selecionada: ${nomeEstufa}`);
+        console.log(`📌 Código da Estufa: ${codigoEstufa}`);
+        console.log(`👤 Usuário UID: ${userUid}`);
+        console.log(`📊 Abrindo gráfico de Temperatura...`);        
         navigation.navigate('LuminosityChartPage', {
             nomeEstufa,
             codigoEstufa,
@@ -54,10 +131,10 @@ export default function EstufaSelecionada() {
     };
 
     const navigateToSoilTemperatureChart = () => {
-        console.log("Estufa Selecionada")
-        console.log(codigoEstufa); // Movido o console.log para fora da chamada navigation.navigate
-        console.log(userUid);
-        console.log("A partir daqui ja é o grafico")
+        console.log(`🌱 Estufa Selecionada: ${nomeEstufa}`);
+        console.log(`📌 Código da Estufa: ${codigoEstufa}`);
+        console.log(`👤 Usuário UID: ${userUid}`);
+        console.log(`📊 Abrindo gráfico de Temperatura...`);        
         navigation.navigate('SoilTemperatureChartPage', {
             nomeEstufa,
             codigoEstufa,
@@ -66,10 +143,10 @@ export default function EstufaSelecionada() {
     };
 
     const navigateToSoilMoistureChart = () => {
-        console.log("Estufa Selecionada")
-        console.log(codigoEstufa); // Movido o console.log para fora da chamada navigation.navigate
-        console.log(userUid);
-        console.log("A partir daqui ja é o grafico")
+        console.log(`🌱 Estufa Selecionada: ${nomeEstufa}`);
+        console.log(`📌 Código da Estufa: ${codigoEstufa}`);
+        console.log(`👤 Usuário UID: ${userUid}`);
+        console.log(`📊 Abrindo gráfico de Temperatura...`);        
         navigation.navigate('SoilMoistureChartPage', {
             nomeEstufa,
             codigoEstufa,
@@ -78,10 +155,10 @@ export default function EstufaSelecionada() {
     };
 
     const navigateToSoilpHChart = () => {
-        console.log("Estufa Selecionada")
-        console.log(codigoEstufa); // Movido o console.log para fora da chamada navigation.navigate
-        console.log(userUid);
-        console.log("A partir daqui ja é o grafico de ph")
+        console.log(`🌱 Estufa Selecionada: ${nomeEstufa}`);
+        console.log(`📌 Código da Estufa: ${codigoEstufa}`);
+        console.log(`👤 Usuário UID: ${userUid}`);
+        console.log(`📊 Abrindo gráfico de Temperatura...`);        
         navigation.navigate('SoilpHChartPage', {
             nomeEstufa,
             codigoEstufa,
@@ -90,16 +167,18 @@ export default function EstufaSelecionada() {
     };
 
     const navigateToVentilationChart = () => {
-        console.log("Estufa Selecionada")
-        console.log(codigoEstufa); // Movido o console.log para fora da chamada navigation.navigate
-        console.log(userUid);
-        console.log("A partir daqui ja é o grafico de ph")
+        console.log(`🌱 Estufa Selecionada: ${nomeEstufa}`);
+        console.log(`📌 Código da Estufa: ${codigoEstufa}`);
+        console.log(`👤 Usuário UID: ${userUid}`);
+        console.log(`📊 Abrindo gráfico de Temperatura...`);        
         navigation.navigate('VentilationChartPage', {
             nomeEstufa,
             codigoEstufa,
             userUid,
         });
     };
+
+    
 
     return (
         <KeyboardAwareScrollView
@@ -127,7 +206,7 @@ export default function EstufaSelecionada() {
                             <View style={styles.infoItem}>
                                 <Ionicons name="thermometer-outline" size={32} />
                                 <Text style={styles.infoTitle}>Temperatura</Text>
-                                <Text style={styles.infoValue}>25°C</Text>
+                                <Text style={styles.infoValue}>{temperatura} °C</Text>
                             </View>
                         </TouchableWithoutFeedback>
                         
@@ -135,7 +214,7 @@ export default function EstufaSelecionada() {
                             <View style={styles.infoItem}>
                                 <Ionicons name="water-outline" size={32} />
                                 <Text style={styles.infoTitle}>Umidade</Text>
-                                <Text style={styles.infoValue}>60%</Text>
+                                <Text style={styles.infoValue}>{umidade} %</Text>
                             </View>
                         </TouchableWithoutFeedback>
 
@@ -143,7 +222,7 @@ export default function EstufaSelecionada() {
                             <View style={styles.infoItem}>
                                 <Ionicons name="sunny-outline" size={32} />
                                 <Text style={styles.infoTitle}>Luminosidade</Text>
-                                <Text style={styles.infoValue}>50%</Text>
+                                <Text style={styles.infoValue}>{luminosidade} lx</Text>
                             </View>
                         </TouchableWithoutFeedback>
 
@@ -151,7 +230,7 @@ export default function EstufaSelecionada() {
                             <View style={styles.infoItem}>
                                 <Ionicons name="thermometer-outline" size={32} />
                                 <Text style={styles.infoTitle}>Temperatura do Solo</Text>
-                                <Text style={styles.infoValue}>20°C</Text>
+                                <Text style={styles.infoValue}>{temperaturaSolo} °C</Text>
                             </View>
                         </TouchableWithoutFeedback>
 
@@ -159,7 +238,7 @@ export default function EstufaSelecionada() {
                             <View style={styles.infoItem}>
                                 <Ionicons name="water-outline" size={32} />
                                 <Text style={styles.infoTitle}>Umidade do Solo</Text>
-                                <Text style={styles.infoValue}>50%</Text>
+                                <Text style={styles.infoValue}>{umidadeSolo} %</Text>
                             </View>
                         </TouchableWithoutFeedback>
 
@@ -167,7 +246,7 @@ export default function EstufaSelecionada() {
                             <View style={styles.infoItem}>
                                 <Ionicons name="color-palette-outline" size={32} />
                                 <Text style={styles.infoTitle}>pH do Solo</Text>
-                                <Text style={styles.infoValue}>6.5</Text>
+                                <Text style={styles.infoValue}>{pHDoSolo}</Text>
                             </View>
                         </TouchableWithoutFeedback>
 
@@ -175,7 +254,7 @@ export default function EstufaSelecionada() {
                             <View style={styles.infoItem}>
                                 <MaterialCommunityIcons name="fan" size={32} />
                                 <Text style={styles.infoTitle}>Ventilação</Text>
-                                <Text style={styles.infoValue}>Boa</Text>
+                                <Text style={styles.infoValue}>{ventilacao}</Text>
                             </View>
                         </TouchableWithoutFeedback>
 
