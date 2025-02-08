@@ -37,6 +37,8 @@ export function useEstufasCodigos() {
     };
 
     fetchEstufasCodigos();
+    return () => unsubscribe();  // Limpeza do listener
+
   }, []);
 
   return estufasCodigos;

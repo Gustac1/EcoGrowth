@@ -19,15 +19,27 @@ export default function ForgotPassword() {
     }
 
     useEffect(() => {
+        // Executa o código quando o componente recebe o foco (isFocused)
         if (isFocused) {
+            // Se a referência fadeInLeftRef não for nula, executa a animação fadeInLeft
             if (fadeInLeftRef.current) {
                 fadeInLeftRef.current?.fadeInLeft(1000);
             }
+            // Se a referência fadeInUpRef não for nula, executa a animação fadeInUp
             if (fadeInUpRef.current) {
                 fadeInUpRef.current?.fadeInUp(1000);
             }
         }
-    }, [isFocused])
+    
+        // Cleanup: Limpeza das referências quando o componente é desmontado
+        // ou quando a dependência isFocused mudar
+        return () => {
+            // Define as referências como nulas para evitar vazamento de memória
+            fadeInLeftRef.current = null;
+            fadeInUpRef.current = null;
+        };
+    
+    }, [isFocused]); // Executa sempre que o valor de 'isFocused' mudar
 
     const handlePasswordReset = async () => {
         try {

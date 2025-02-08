@@ -116,11 +116,13 @@ export default function EstufaSelecionada() {
                 </View>
                 <View style={styles.containerForm}>
                     <View style={styles.infoContainer}>
+                        
                         <View style={styles.infoItem}>
                             <Ionicons name="checkmark-circle-outline" size={32} />
                             <Text style={styles.infoTitle}>Status</Text>
                             <Text style={styles.infoValue}>Online</Text>
                         </View>
+                        
                         <TouchableWithoutFeedback onPress={navigateToTemperatureChart}>
                             <View style={styles.infoItem}>
                                 <Ionicons name="thermometer-outline" size={32} />
@@ -128,6 +130,7 @@ export default function EstufaSelecionada() {
                                 <Text style={styles.infoValue}>25°C</Text>
                             </View>
                         </TouchableWithoutFeedback>
+                        
                         <TouchableWithoutFeedback onPress={navigateToHumidityChart}>
                             <View style={styles.infoItem}>
                                 <Ionicons name="water-outline" size={32} />

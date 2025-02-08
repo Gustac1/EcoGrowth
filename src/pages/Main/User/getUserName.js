@@ -29,6 +29,10 @@ export function useUserName() {
     };
 
     fetchUserName();
+
+    return () => {
+      console.log("Limpeza de listener ou variáveis do useEffect");
+    };
   }, []);
 
   return userName;
