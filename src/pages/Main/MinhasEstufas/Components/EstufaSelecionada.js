@@ -8,6 +8,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import TemperatureChart from './Charts/Temperature/TemperatureChart';
 import HumidityChart from './Charts/Humidity/HumidityChart';
 import { ScatterChart } from 'react-native-chart-kit';
+import { getDatabase, ref, onValue } from 'firebase/database';
 
 export default function EstufaSelecionada() {
     const navigation = useNavigation();
@@ -26,69 +27,25 @@ export default function EstufaSelecionada() {
     useEffect(() => {
         if (!codigoEstufa) return;
 
-        // 🔹 Caminhos ajustados para cada sensor no Firestore
-        const temperaturaRef = doc(db, 'Dispositivos', codigoEstufa, 'Dados', 'Temperatura');
-        const umidadeRef = doc(db, 'Dispositivos', codigoEstufa, 'Dados', 'Umidade');
-        const luminosidadeRef = doc(db, 'Dispositivos', codigoEstufa, 'Dados', 'Luminosidade');
-        const temperaturaSoloRef = doc(db, 'Dispositivos', codigoEstufa, 'Dados', 'TemperaturaDoSolo');
-        const umidadeSoloRef = doc(db, 'Dispositivos', codigoEstufa, 'Dados', 'UmidadeDoSolo');
-        const pHDoSoloRef = doc(db, 'Dispositivos', codigoEstufa, 'Dados', 'pHDoSolo');
-        const ventilacaoRef = doc(db, 'Dispositivos', codigoEstufa, 'Dados', 'Ventilacao');
+        const db = getDatabase();
+        const dadosRef = ref(db, `Dispositivos/${codigoEstufa}/DadosAtuais`);
 
-        // 🔹 Assinaturas onSnapshot para escutar as mudanças em tempo real
-        const unsubscribeTemperatura = onSnapshot(temperaturaRef, (snapshot) => {
+        // 🔹 Escuta os dados em tempo real no Realtime Database
+        const unsubscribe = onValue(dadosRef, (snapshot) => {
             if (snapshot.exists()) {
-                setTemperatura(snapshot.data().TemperaturaDoArAtual || "N/A");
-            }
-        });
-
-        const unsubscribeUmidade = onSnapshot(umidadeRef, (snapshot) => {
-            if (snapshot.exists()) {
-                setUmidade(snapshot.data().UmidadeDoArAtual || "N/A");
-            }
-        });
-
-        const unsubscribeLuminosidade = onSnapshot(luminosidadeRef, (snapshot) => {
-            if (snapshot.exists()) {
-                setLuminosidade(snapshot.data().LuminosidadeAtual || "N/A");
-            }
-        });
-
-        const unsubscribeTemperaturaSolo = onSnapshot(temperaturaSoloRef, (snapshot) => {
-            if (snapshot.exists()) {
-                setTemperaturaSolo(snapshot.data().TemperaturaDoSoloAtual || "N/A");
-            }
-        });
-
-        const unsubscribeUmidadeSolo = onSnapshot(umidadeSoloRef, (snapshot) => {
-            if (snapshot.exists()) {
-                setUmidadeSolo(snapshot.data().UmidadeDoSoloAtual || "N/A");
-            }
-        });
-
-        const unsubscribePHDoSolo = onSnapshot(pHDoSoloRef, (snapshot) => {
-            if (snapshot.exists()) {
-                setPHDoSolo(snapshot.data().pHDoSoloAtual || "N/A");
-            }
-        });
-
-        const unsubscribeVentilacao = onSnapshot(ventilacaoRef, (snapshot) => {
-            if (snapshot.exists()) {
-                setVentilacao(snapshot.data().VentilacaoAtual || "N/A");
+                const data = snapshot.val();
+                setTemperatura(data.TemperaturaDoArAtual || "N/A");
+                setUmidade(data.UmidadeDoArAtual || "N/A");
+                setLuminosidade(data.LuminosidadeAtual || "N/A");
+                setTemperaturaSolo(data.TemperaturaDoSoloAtual || "N/A");
+                setUmidadeSolo(data.UmidadeDoSoloAtual || "N/A");
+                setPHDoSolo(data.pHDoSoloAtual || "N/A");
+                setVentilacao(data.VentilacaoAtual || "N/A");
             }
         });
 
         // 🔹 Cleanup para evitar vazamento de memória
-        return () => {
-            unsubscribeTemperatura?.();
-            unsubscribeUmidade?.();
-            unsubscribeLuminosidade?.();
-            unsubscribeTemperaturaSolo?.();
-            unsubscribeUmidadeSolo?.();
-            unsubscribePHDoSolo?.();
-            unsubscribeVentilacao?.();
-        };
-
+        return () => unsubscribe();
     }, [codigoEstufa]);
 
 
