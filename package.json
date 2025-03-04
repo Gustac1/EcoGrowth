@@ -21,6 +21,7 @@
     "@react-navigation/native-stack": "^6.9.13",
     "@reduxjs/toolkit": "^2.2.1",
     "expo": "^52.0.37",
+    "expo-sqlite": "~15.1.2",
     "expo-status-bar": "~2.0.1",
     "expo-updates": "^0.27.2",
     "firebase": "^10.3.0",
@@ -39,6 +40,7 @@
     "react-native-svg": "15.8.0",
     "react-query": "^3.39.3",
     "react-redux": "^9.1.0",
+    "realm": "^12.14.1",
     "redux": "^5.0.1"
   },
   "devDependencies": {
